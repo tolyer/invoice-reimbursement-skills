@@ -1,0 +1,7 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.pool-progress.json
+票袋录入计划.*
+发票目录-*/
+报销材料核验台账-*
