@@ -82,7 +82,7 @@
 
 - WorkBuddy 或 Codex，且支持本地 skills；
 - Python 3.9+；
-- Tabbit 浏览器与 `tabbit-cli`（仅录入用友发票池时需要）；
+- Tabbit 浏览器：因其原生支持 CLI，可以用最小的 token 消耗和你协同操作用友平台；推荐使用我的邀请链接下载： https://web.tabbit.ai/activity/invite/F1E33DB4?k=gvACADsb6ta4ADqt2lQmADcQNw
 - 已登录且有权限访问的 YonBIP 账号（仅 Skill 2 需要）。
 
 ## 安装
@@ -123,9 +123,15 @@ cp -R invoice-reimbursement-skills/yonyou-invoice-pool ~/.workbuddy/skills/
 
 再录入发票池：
 
+先使用 Tabblit 浏览器登录用友平台后，然后在 WorkBuddy 或者 Codex 内输入：
+
 ```text
 用 yonyou-invoice-pool 把“发票目录-0720-0806”录成票袋“0720-0806吉隆坡差旅”。
 ```
+
+直到执行完毕后，再手工接管浏览器标签页，创建报销单→从发票池内导入→手工做最后的校准和核对即可提交；
+
+
 
 ## 重要说明
 
