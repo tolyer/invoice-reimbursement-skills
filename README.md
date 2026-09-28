@@ -32,11 +32,11 @@
 4. Grab 官方流水   [获取链接](https://help.grab.com/passenger/en-my/360038782911-How-to-find-my-Grab-transaction-history)
 5. 出差补助
 
-签证费、餐饮发票、地铁票等其他类型尚未纳入默认规则。
+通过其他渠道预定的机票和酒店，以及其他类型的报销费用单尚未纳入默认规则。
 
 ### 2. 把核验结果录入用友发票池
 
-完成归档后，`yonyou-invoice-pool` 会解析标准目录，生成《票袋录入计划》。用户确认计划后，它通过 Tabbit：
+完成归档后，`yonyou-invoice-pool` 会解析标准目录，生成《票袋录入计划》。用户确认计划后，它通过 Tabbit浏览器：
 
 - 在用友“发票池（含收据）”中创建票袋；
 - 逐行填写账单字段；
@@ -82,8 +82,8 @@
 
 - WorkBuddy 或 Codex，且支持本地 skills；
 - Python 3.9+；
-- Tabbit 浏览器与 `tabbit-cli`（仅录入用友发票池时需要）；
-- 已登录且有权限访问的 YonBIP 账号（仅 Skill 2 需要）。
+- Tabbit 浏览器——美团出品的AI 浏览器，原生自带 CLI，可以节省 Token；推荐大家使用我的邀请链接下载：Try Tabbit using my link, complete one chat on desktop, and get Pro for free: https://web.tabbit.ai/activity/invite/F1E33DB4?k=gvACADsb6ta4ADqt2lQmADcQNw 
+- 已登录且有权限访问的 YonBIP 账号（仅 Skill yonyou-invoice-pool 需要）。
 
 ## 安装
 
@@ -122,10 +122,12 @@ cp -R invoice-reimbursement-skills/yonyou-invoice-pool ~/.workbuddy/skills/
 ```
 
 再录入发票池：
+使用 tabbit 浏览器登录用友平台，然后在 Workbuddy/Codex 给出指令：
 
 ```text
 用 yonyou-invoice-pool 把“发票目录-0720-0806”录成票袋“0720-0806吉隆坡差旅”。
 ```
+完成后，再手工接手浏览器标签页，创建报销单→从票袋导入明细→选中已经自动导入的发票记录→人工复核后提交即可。
 
 ## 重要说明
 
