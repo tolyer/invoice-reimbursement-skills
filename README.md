@@ -29,7 +29,7 @@
 1. 携程飞机票
 2. 携程酒店
 3. 携程专车
-4. Grab 流水
+4. Grab 官方流水（获取链接：https://help.grab.com/passenger/en-my/360038782911-How-to-find-my-Grab-transaction-history）
 5. 出差补助
 
 签证费、餐饮发票、地铁票等其他类型尚未纳入默认规则。
