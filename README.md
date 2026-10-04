@@ -76,7 +76,7 @@
 
 ### 发票池录入
 
-![用友发票池录入结果](./assets/yonyou-invoice-pool-v030-overview.png)
+![用友发票池录入结果](./assets/yonyou-invoice-pool-v030-overview2.png)
 
 ![用友发票池账单明细（已脱敏）](./assets/invoice-pool-detail-redacted.png)
 
