@@ -76,17 +76,11 @@
 
 ### 发票池录入
 
-![用友发票池录入结果](./assets/invoice-pool-overview.png)
+![用友发票池录入结果](./assets/yonyou-invoice-pool-v030-overview.png)
 
 ![用友发票池账单明细（已脱敏）](./assets/invoice-pool-detail-redacted.png)
 
-### v0.3.0 完整票袋实跑
 
-8 行账单一次录完后，票袋小计与归档清单保持一致：
-
-![用友发票池 v0.3.0 完整票袋实跑结果](./assets/yonyou-invoice-pool-v030-overview.png)
-
-前两张示例图中的姓名、邮箱、订单号、订座号、票号、二维码和路线等识别信息已经脱敏；最后一张为仓库维护者提供的实跑界面截图。
 
 ## 环境要求
 
