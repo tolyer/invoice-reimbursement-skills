@@ -1,8 +1,8 @@
 ---
 name: yonyou-invoice-pool
 description: 用友云（YonBIP）发票池票袋独立填写。当用户要把一个已结构化归档的发票目录（按报销行分文件夹、内分「★票据本体」与「☆附件」两级）整体录进用友平台发票池的一个新建票袋时使用。操作路径为 首页 → 发票池（含收据）→ 待报销 → 新增 → 填写票袋名称。覆盖目录解析、录入计划确认、票袋新建、逐行手工录入账单、票据本体与附件上传、收尾复核与交付。不负责报销单表头填写、事项关联与提交。
-version: 0.2.0
-agent_created: true
+metadata:
+  version: "0.3.0"
 ---
 
 # 用友发票池票袋填写
@@ -39,7 +39,8 @@ agent_created: true
 ### 第 1 步：解析目录 → 生成《票袋录入计划》
 
 ```bash
-python3 ~/.workbuddy/skills/yonyou-invoice-pool/scripts/scan_invoice_dir.py \
+python3 \
+  ~/.workbuddy/skills/yonyou-invoice-pool/scripts/scan_invoice_dir.py \
   "<发票目录>" --out 票袋录入计划.md --json 票袋录入计划.json
 ```
 
@@ -78,6 +79,19 @@ python3 ~/.workbuddy/skills/yonyou-invoice-pool/scripts/scan_invoice_dir.py \
 （**回读 checked 校验**）→ 下一步 → 填字段 → 上传票据本体 → 上传附件 → 关闭附件面板 → **保存**。
 
 ⚠️ 票袋视图**没有「添加账单」按钮**（那是报销单内的叫法），入口就是「发票采集 ▼」。
+
+四条 2026-10-04 实测、每次都会遇到的硬规矩（详见手册第 3~4 节）：
+
+1. **字段定位一律用 `fieldid`**：输入框带 `fieldid="znbzbx_tallydata|xxx"`——
+   金额 `|nmny`、备注 `|vmemo`、发生地 `|vdef1`、币种 `|vcurrency_name`、
+   开票日期 `|dopendate_input`、发生日期 `|dcostdate_input`。
+   别用 label 爬层，更别用坐标（坐标会标到隐藏的 `|id` 导致「element is not visible」超时）。
+2. **两个单选都可能静默点不动**：账单类型和消费类型**各回读一次 checked**，都确认了再点下一步，
+   否则弹「请选择发票类型」红条。
+3. **日历会记住上一次的月份视图**：每次打开日历**先读 `.wui-picker-month-btn` 校验月份**，
+   按差值决定翻几次，**绝不写死「翻 N 次」**（写死过一次，把 09-20 填成了 08-20）。
+4. **币种先 `fill('')` 再输入**：手录行程默认美元，直接输入「港币」会拼成「美元港币」。
+   输入后靠联想选 HKD，回读 inputValue 期望「港币」。
 
 逐行校验见 `references/复核与交付.md` 第一节，不符当场补做。
 
@@ -119,7 +133,7 @@ python3 ~/.workbuddy/skills/yonyou-invoice-pool/scripts/scan_invoice_dir.py \
 
 ---
 
-## 已知环境备注（微众科技租户，2026-09-06 已验证）
+## 已知环境备注（微众科技租户，2026-09-06 建袋流程 / 2026-10-04 录入流程 已验证）
 
 - 平台 iframe 域：`c4.yonyoucloud.com`；主文档标题「微众科技」且 body 为空，控件全在 iframe 里。
 - UI 组件前缀 `.wui-`；弹窗 `.wui-modal`；日历单元格 `td.wui-picker-cell-in-view`。
@@ -130,3 +144,11 @@ python3 ~/.workbuddy/skills/yonyou-invoice-pool/scripts/scan_invoice_dir.py \
   录入账单的入口是工具栏「**发票采集 ▼**」→「手工录入」/ 扫码 / 邮箱导入（与报销单内同一套）。
 - Playwright `setInputFiles()` 在此环境**会挂起**，一律改用 JS 注入（见手册第 5 节）。
 - 文件上传单帧 base64 上限约 1.25MB，超限需分片。
+- 消费类型口径：携程用车 / 滴滴 → **网约车**；Grab → **其他交通**；补助 → 手录行程 + 补助（无发生地字段）。
+
+### 已实测跑通的两个票袋（回归基线）
+
+| 票袋 | 行数 | 合计 | 备注 |
+|---|---|---|---|
+| `0720-0806吉隆坡差旅` | 6 | HK$23,921.47 | 首版，借道报销单录入 |
+| `0920-0930吉隆坡出差(HKD14195)` | 8 | HK$14,195.17 | 0.3.0 全流程独立录入，平台小计与归档清单勾稽一致，未提交 |

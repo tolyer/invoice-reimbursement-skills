@@ -43,15 +43,24 @@ VOUCHER_DIR_MARK = "★票据本体"
 ATTACH_DIR_MARK = "☆附件"
 
 # 账单类型（平台 radio）：小票(非中国大陆) / 手录行程
-# 消费类型（平台 radio）：飞机 / 住宿（境内/境外）/ 其他交通 / 补助 ...
+# 消费类型（平台 radio，2026-10-04 实测全量）：
+#   飞机 / 住宿（境内/境外）/ 网约车 / 其他交通 / 补助 / 服务类 / 有形/无形资产或其他
+#
+# ⚠️ 用户口径（2026-10-04 确认，勿自行"优化"）：
+#   携程用车 + 滴滴  → 网约车
+#   Grab            → 其他交通
+#   补助            → 手录行程 + 消费类型「补助」（无发生地字段）
+# 匹配按顺序，命中即返回，所以「飞机含专车」要先命中飞机。
 CONSUME_RULES = [
     # (关键词正则, 账单类型, 消费类型)
     (r"补助|补贴|津贴", "手录行程", "补助"),
-    (r"飞机|机票|航班|航空|含专车", "小票(非中国大陆)", "飞机"),
+    (r"飞机|机票|航班|航空", "小票(非中国大陆)", "飞机"),
     (r"住宿|酒店|水单|客房", "小票(非中国大陆)", "住宿（境内/境外）"),
-    (r"grab|打车|出租车|网约车|用车|专车|交通", "小票(非中国大陆)", "其他交通"),
+    (r"grab|出租车", "小票(非中国大陆)", "其他交通"),
     (r"火车|高铁|动车|铁路", "小票(非中国大陆)", "火车"),
     (r"餐饮|餐费|用餐", "小票(非中国大陆)", "餐饮"),
+    (r"用车|专车|网约车|滴滴|打车", "小票(非中国大陆)", "网约车"),
+    (r"交通", "小票(非中国大陆)", "其他交通"),
 ]
 
 # 原币币种识别（按文件名线索，优先级从高到低）
@@ -119,19 +128,35 @@ def list_files(path):
     return out
 
 
+# 台账识别：强匹配 = 文件名含 台账/ledger/核验；弱匹配 = 含 清单/归档/汇总/明细/报销材料
+# ⚠️ 实测（2026-10-04）：0920~0930 目录的台账叫「归档清单.md」，只认「台账」会整份漏检，
+# 导致日期/发生地/备注四项人工字段全部靠人工读。补弱匹配，但标为「候选」需人确认。
+STRONG_LEDGER_RE = re.compile(r"台账|ledger|核验", re.IGNORECASE)
+WEAK_LEDGER_RE = re.compile(r"清单|归档|汇总|明细|报销材料", re.IGNORECASE)
+LEDGER_EXTS = (".md", ".xlsx", ".xls", ".csv")
+
+
 def find_ledger(root):
-    """在目录根层（及父目录）找核验台账 md/xlsx。"""
-    candidates = []
+    """在目录根层（及父目录）找台账类文件。
+
+    返回 (strong, weak)：
+    - strong：文件名含 台账/ledger/核验 —— 直接作为字段来源
+    - weak  ：文件名含 清单/归档/汇总/明细 —— 候选，需人工确认后再当作字段来源
+    """
+    strong, weak = [], []
     for base in (root, os.path.dirname(root)):
         if not os.path.isdir(base):
             continue
         for name in sorted(os.listdir(base)):
             low = name.lower()
-            if low.startswith("."):
+            if low.startswith(".") or not low.endswith(LEDGER_EXTS):
                 continue
-            if re.search(r"台账|ledger|核验", name) and low.endswith((".md", ".xlsx", ".xls", ".csv")):
-                candidates.append(os.path.abspath(os.path.join(base, name)))
-    return candidates
+            full = os.path.abspath(os.path.join(base, name))
+            if STRONG_LEDGER_RE.search(name):
+                strong.append(full)
+            elif WEAK_LEDGER_RE.search(name):
+                weak.append(full)
+    return strong, weak
 
 
 # ---------------------------------------------------------------- 主解析
@@ -196,6 +221,7 @@ def scan(root):
         })
 
     rows.sort(key=lambda r: r["seq"])
+    ledger_strong, ledger_weak = find_ledger(root)
 
     # 标注待确认项
     for r in rows:
@@ -222,7 +248,8 @@ def scan(root):
         "total_hkd": round(sum(r["hkd_amount"] for r in rows), 2),
         "row_count": len(rows),
         "attachment_count": sum(len(r["attachments"]) for r in rows),
-        "ledger_files": find_ledger(root),
+        "ledger_files": ledger_strong,
+        "ledger_candidates": ledger_weak,
         "rows": rows,
     }
 
@@ -238,6 +265,10 @@ def render_md(plan):
     if plan["ledger_files"]:
         L.append("- 检出台账（优先作为字段来源）：")
         for p in plan["ledger_files"]:
+            L.append(f"  - `{p}`")
+    if plan.get("ledger_candidates"):
+        L.append("- ⚠️ 疑似台账（文件名不含「台账/核验」，**需人工确认**后再当字段来源）：")
+        for p in plan["ledger_candidates"]:
             L.append(f"  - `{p}`")
     L.append("")
     L.append("## 一、逐行录入清单\n")
