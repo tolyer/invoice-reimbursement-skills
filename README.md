@@ -68,13 +68,13 @@
 
 ## 效果展示
 
-### 整理前后
+### invoice-organizer 整理前后
 
 | 整理前 | 整理后 |
 |---|---|
 | ![整理前的散乱凭证](./assets/before-unorganized-files.png) | ![整理后的报销目录](./assets/after-organized-folders.png) |
 
-### 发票池录入
+### yonyou-invoice-pool 发票池录入
 
 ![用友发票池录入结果](./assets/yonyou-invoice-pool-v030-overview2.png)
 
