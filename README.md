@@ -40,7 +40,7 @@
 
 遇到缺料、口径冲突或疑似私人行程时，它会把问题集中列出，不会直接动原文件：
 
-![核验阶段列出的缺料与待确认事项](./assets/invoice-organizer-review-checklist.png)
+![核验阶段列出的缺料与待确认事项](./assets/invoice-organizer-review-checklist2.png)
 
 目前支持七类材料：
 
