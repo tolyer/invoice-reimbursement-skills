@@ -56,6 +56,13 @@
 
 签证费、餐饮发票、地铁票等其他类型尚未纳入默认规则。
 
+### invoice-organizer 整理前后
+
+| 整理前 | 整理后 |
+|---|---|
+| ![整理前的散乱凭证](./assets/before-unorganized-files.png) | ![整理后的报销目录](./assets/after-organized-folders.png) |
+
+
 ## Skill 2：录入用友发票池
 
 完成归档后，`yonyou-invoice-pool` 会解析标准目录并生成《票袋录入计划》。用户确认后，它通过 Tabbit：
@@ -66,20 +73,11 @@
 
 这个 skill 只处理发票池票袋。报销单表头、事项关联和最终提交仍由用户完成。
 
-## 效果展示
-
-### invoice-organizer 整理前后
-
-| 整理前 | 整理后 |
-|---|---|
-| ![整理前的散乱凭证](./assets/before-unorganized-files.png) | ![整理后的报销目录](./assets/after-organized-folders.png) |
-
 ### yonyou-invoice-pool 发票池录入
 
 ![用友发票池录入结果](./assets/yonyou-invoice-pool-v030-overview2.png)
 
 ![用友发票池账单明细（已脱敏）](./assets/invoice-pool-detail-redacted.png)
-
 
 
 ## 环境要求
