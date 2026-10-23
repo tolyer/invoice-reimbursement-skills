@@ -10,7 +10,7 @@ scan_invoice_dir.py —— 解析结构化发票目录，生成《票袋录入�
     │   ├── ★票据本体/QQ邮箱-机票订单确认¥2484.pdf
     │   └── ☆附件/01-...png  02-...pdf ...
     ├── 06-补助-HKD9996.00/
-    │   ├── ★票据本体/说明-手录行程无票据本体.txt
+    │   ├── ★票据本体/补助逐日台账-<区间>.txt
     │   └── ☆附件/01-...png
     └── 报销材料核验台账*.md（可选，优先作为字段来源）
 
@@ -188,11 +188,21 @@ def scan(root):
             elif ATTACH_DIR_MARK in sub:
                 attach_files = list_files(subpath)
 
-        # 票据本体：.txt 说明文件视为「无票据本体」
-        real_vouchers = [f for f in voucher_files if f["ext"] not in (".txt", ".md")]
-        note_only = [f for f in voucher_files if f["ext"] in (".txt", ".md")]
-
         bill_type, consume_type = detect_consume_type(desc)
+        # v2.3.0 起，补助逐日台账 txt 是补助行的票据本体；其他 txt/md 仍按说明文件处理。
+        subsidy_txt = [
+            f for f in voucher_files
+            if f["ext"] == ".txt" and "补助逐日台账" in f["name"] and consume_type == "补助"
+        ]
+        subsidy_txt_names = {f["name"] for f in subsidy_txt}
+        real_vouchers = [
+            f for f in voucher_files
+            if f["ext"] not in (".txt", ".md") or f["name"] in subsidy_txt_names
+        ]
+        note_only = [
+            f for f in voucher_files
+            if f["ext"] in (".txt", ".md") and f["name"] not in subsidy_txt_names
+        ]
         all_names = [f["name"] for f in real_vouchers + attach_files]
         currency, currency_hit = detect_currency(all_names)
         rate_cur, rate_val, rate_file = detect_rate([f["name"] for f in attach_files])
@@ -233,7 +243,9 @@ def scan(root):
         if not r["rate"]["value"] and r["src_currency"] not in (None, "HKD"):
             t.append(f"缺少 {r['src_currency']} 汇率凭证截图")
         if r["voucher_missing"]:
-            if r["bill_type"] == "手录行程":
+            if r["consume_type"] == "补助":
+                t.append("★票据本体缺少补助逐日台账 txt，须先由 invoice-organizer 生成")
+            elif r["bill_type"] == "手录行程":
                 t.append("手录行程无票据本体（预期内，不需上传）")
             else:
                 t.append("★票据本体为空，平台将拒绝保存，须补材料")
