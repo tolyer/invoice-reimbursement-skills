@@ -3,8 +3,9 @@
 """
 出差补助天数计算器
 
-规则（见 references/账单分类与勾稽规则.md 第五节）：
-  1. 出发日 = 0.5 天，返回日 = 0.5 天，中间整日 = 1.0 天
+规则（见 references/账单分类与勾稽规则.md 第四节）：
+  1. 出发日 = 1.0 天（2026-10-23 新规则，原 0.5），返回日 = 0.5 天，中间整日 = 1.0 天
+     当日往返（出发=返回同一天）按 1.0 天计，返回日不叠加
   2. 周末（周六/周日）默认剔除，计 0 天
   3. 法定节假日默认不自动扣减，但会输出提醒请用户二次确认（--deduct-holiday 可直接扣）
   4. 调休上班日（日历中标记为 workday）逢周末时按工作日计入
@@ -62,7 +63,13 @@ def calculate(start, end, rate=75.0, fx=None, deduct_holiday=False,
     rows, total, hits = [], 0.0, []
     cur = start
     while cur <= end:
-        nominal = 0.5 if cur in (start, end) else 1.0
+        # 出发日计全天（2026-10-23 新规则）；返回日计半天；当日往返只按出发日 1.0 计
+        if cur == start:
+            nominal = 1.0
+        elif cur == end:
+            nominal = 0.5
+        else:
+            nominal = 1.0
         weekend = cur.weekday() >= 5
         hol_name = holidays.get(cur)
         is_workday_override = cur in workdays and weekend
@@ -75,7 +82,7 @@ def calculate(start, end, rate=75.0, fx=None, deduct_holiday=False,
             count, reason = nominal, f"周末但为调休上班日，计入"
         elif weekend:
             if is_edge and weekend_travel_day:
-                count, reason = nominal, "周末（出发/落地日按开关仍计半天）"
+                count, reason = nominal, f"周末，但为出发/到达日，按开关计入 {nominal:g} 天"
             else:
                 count, reason = 0.0, "周末，不计入"
         if hol_name and not deduct_holiday and not (weekend and not is_workday_override):
